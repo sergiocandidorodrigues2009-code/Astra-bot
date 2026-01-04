@@ -946,521 +946,213 @@ footer{margin-top:48px;padding:26px 0;color:rgba(255,255,255,0.6);text-align:cen
 
 <style>
 /* ===========================================================
-    MODIFICAÇÕES PARA UI 'COLOR STUDIO' DA IMAGEM
-    =========================================================== */
+    1. CSS - HIGH-END UI (RAZER/APPLE STYLE)
+   =========================================================== */
+:root {
+    --accent: #8b3bff; /* Razer Green */
+    --bg: #050505;
+    --panel-glass: rgba(15, 15, 15, 0.85);
+    --border: rgba(255, 255, 255, 0.1);
+}
 
-/* Remove estilos de overlay/dialog e define o layout de tela cheia */
 #colorPanel {
-    width: 100vw;
-    height: 100vh;
-    position: fixed;
-    inset: 0;
-    background-color: #1a1a1a; /* Fundo escuro uniforme */
-    backdrop-filter: none;
-    transition: opacity .45s ease;
-    opacity: 0;
-    pointer-events: none;
-    border: none;
-    box-shadow: none;
-    z-index: 99999;
-    display: flex; 
-    flex-direction: row;
-    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    width: 100vw; height: 100vh; position: fixed; inset: 0;
+    background: var(--bg); display: none; font-family: 'Inter', sans-serif;
+    z-index: 100000; color: white; overflow: hidden;
 }
 
-/* Visível */
-#colorPanel.mostrar {
-    opacity: 1;
-    pointer-events: all;
+#colorPanel.mostrar { display: flex; animation: panelIn 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+
+@keyframes panelIn { from { opacity: 0; filter: blur(10px); } to { opacity: 1; filter: blur(0); } }
+
+/* Barra Lateral de Categorias */
+.nav-rail {
+    width: 80px; background: rgba(0,0,0,0.5); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; align-items: center; padding: 40px 0; gap: 30px;
 }
 
-/* 1. Painel Esquerdo: Controles e Paleta */
+.nav-btn {
+    width: 44px; height: 44px; border-radius: 12px; background: transparent;
+    border: 1px solid var(--border); color: #555; cursor: pointer; transition: 0.3s;
+    display: flex; align-items: center; justify-content: center; font-size: 20px;
+}
+
+.nav-btn:hover { color: #fff; border-color: #fff; }
+.nav-btn.active { background: #fff; color: #000; border-color: #fff; box-shadow: 0 0 20px rgba(255,255,255,0.2); }
+
+/* Painel de Customização Flutuante */
 #controlsPanel {
-    width: 320px;
-    height: 100%;
-    background-color: #222222;
-    padding: 20px 30px;
-    display: flex;
-    flex-direction: column;
-    border-right: 1px solid #333;
-    color: #ffffff;
-    overflow-y: auto; 
-    outline: none;
+    position: absolute; right: 30px; top: 30px; bottom: 30px;
+    width: 380px; background: var(--panel-glass); backdrop-filter: blur(30px);
+    border-radius: 28px; border: 1px solid var(--border); padding: 40px;
+    display: flex; flex-direction: column;
 }
 
-/* 2. Painel Direito: Preview 3D */
-#previewPanel {
-    flex-grow: 1;
-    background-color: #1e1e1e;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    padding: 20px;
+.section-group { display: none; }
+.section-group.active { display: block; animation: slideUp 0.5s ease forwards; }
+
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Estilização de Cores e Sliders */
+.color-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 20px; }
+.swatch-btn {
+    aspect-ratio: 1; border-radius: 10px; border: 2px solid transparent; 
+    cursor: pointer; transition: 0.2s; padding: 3px; background: rgba(255,255,255,0.05);
+}
+.swatch-btn div { width: 100%; height: 100%; border-radius: 7px; }
+.swatch-btn.active { border-color: var(--accent); transform: scale(1.1); }
+
+.label-title { font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: #666; font-weight: 700; margin-bottom: 15px; display: block; }
+
+/* Sliders Premium */
+.range-wrap { margin-bottom: 25px; }
+input[type="range"] {
+    -webkit-appearance: none; width: 100%; height: 3px; background: #333;
+    border-radius: 5px; outline: none; margin-top: 10px;
+}
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 18px; height: 18px; background: #fff;
+    border-radius: 50%; cursor: pointer; border: 4px solid #000;
 }
 
-/* Header */
-#panelHeader{
-    width: 100%;
-    display: block;
-    margin-bottom: 30px;
+/* Visualizador */
+#viewer { flex: 1; width: 100%; height: 100%; --poster-color: transparent; }
+#applyBtn {
+    margin-top: auto; padding: 20px; border-radius: 15px; border: none;
+    background: #fff; color: #000; font-weight: 800; text-transform: uppercase;
+    cursor: pointer; transition: 0.3s;
 }
-#studioTitle{
-    color: #888;
-    font-size: 11px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    margin-bottom: 5px;
-    font-weight: 500;
-}
-#panelTitle{
-    color:#fff;
-    font-weight:700;
-    font-size: 16px;
-    letter-spacing:0.8px;
-    text-transform: uppercase;
-}
-#closePanel, #resetColor { display: none; }
-
-
-/* Roda de Cores (Simulação) */
-#colorWheel {
-    width: 200px;
-    height: 200px;
-    border-radius: 50%;
-    background: conic-gradient(red, yellow, lime, aqua, blue, magenta, red);
-    margin: 0 auto 30px;
-    position: relative;
-    box-shadow: 0 0 10px rgba(0,0,0,0.5);
-    cursor: crosshair;
-}
-
-/* Placeholder para o seletor da roda */
-.color-selector {
-    width: 15px;
-    height: 15px;
-    border: 2px solid white;
-    border-radius: 50%;
-    position: absolute;
-    bottom: 40px;
-    left: 45px;
-    background: #8c8c8c;
-}
-
-/* ===========================================================
-    PALETA DE CORES (Grid)
-    =========================================================== */
-.color-bar {
-    margin-top: 20px;
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 8px;
-    justify-content: flex-start;
-    align-items: flex-start;
-}
-
-.color-btn {
-    width: 32px; 
-    height: 32px;
-    border-radius: 6px; 
-    border: 1px solid rgba(255,255,255,0.08); 
-    position: relative;
-    cursor: pointer;
-    transition: border-color .18s ease, transform .18s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* Contorno branco quando ativo */
-.color-btn.active::after {
-    content: "";
-    position: absolute;
-    inset: -3px; 
-    border-radius: 8px; 
-    border: 2px solid #fff; 
-    box-shadow: none;
-}
-
-.color-btn:focus {
-    outline: 3px solid rgba(255,255,255,0.12);
-    transform: scale(1.05);
-}
-
-/* hover */
-.color-btn:hover {
-    transform: scale(1.05);
-    border-color: #fff;
-}
-
-/* Inputs de código Hex */
-.hex-inputs {
-    margin-top: 30px;
-    padding-top: 20px;
-    border-top: 1px solid #333;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-}
-
-.input-group label {
-    display: block;
-    font-size: 10px;
-    color: #888;
-    margin-bottom: 4px;
-    text-transform: uppercase;
-}
-
-.input-group input {
-    background: #333333;
-    border: none;
-    color: #ccc;
-    padding: 8px;
-    border-radius: 4px;
-    width: 100%;
-    font-family: monospace;
-    font-size: 12px;
-}
-
-
-/* ===========================================================
-    VISUALIZADOR 3D E BOTÃO APPLY
-    =========================================================== */
-#viewerWrap{
-    width: 90%;
-    height: 80%;
-    max-width: 900px;
-    max-height: 900px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-}
-#viewer {
-    width:100%;
-    height:100%;
-    filter: drop-shadow(0 0 20px rgba(0,0,0,0.5));
-    border-radius: 0;
-    background: transparent;
-    overflow: hidden;
-    transition: filter .45s ease, opacity .45s ease, transform .45s ease;
-}
-
-/* Botão APPLY (novo) */
-#applyConfig {
-    position: absolute;
-    bottom: 60px; /* POSIÇÃO CORRIGIDA MAIS PARA BAIXO */
-    padding: 12px 30px;
-    border-radius: 4px;
-    border: none;
-    background-color: #444; 
-    color: #fff;
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    cursor: pointer;
-    transition: background-color 0.2s, transform 0.1s;
-    box-shadow: 0 0 0 1px #555;
-}
-
-#applyConfig:hover {
-    background-color: #555;
-    transform: scale(1.05);
-}
-
-/* Loader simples */
-#viewerLoader{
-    position:absolute;
-    inset:0;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background: rgba(30, 30, 30, 0.9);
-    color:white;
-    font-weight:600;
-    z-index:22;
-    border-radius:12px;
-}
-
-/* pequenos ajustes responsivos */
-@media (max-width:960px){
-    #controlsPanel { width: 280px; padding: 20px; }
-    #colorWheel { width: 160px; height: 160px; margin-bottom: 20px; }
-    .color-btn { width: 28px; height: 28px; }
-}
-
-@media (max-width:600px){
-    #colorPanel { flex-direction: column; }
-    #controlsPanel { width: 100%; height: auto; border-bottom: 1px solid #333; border-right: none; }
-    #previewPanel { height: 60vh; }
-    #applyConfig { bottom: 30px; }
-}
-
+#applyBtn:hover { transform: scale(1.02); background: var(--accent); }
 </style>
 
-<div id="colorPanel" role="application" aria-modal="true" aria-labelledby="panelTitle" aria-hidden="true">
+<div id="colorPanel">
+    <aside class="nav-rail">
+        <button class="nav-btn active" data-tab="paint">🎨</button>
+        <button class="nav-btn" data-tab="materials">💎</button>
+        <button class="nav-btn" data-tab="light">☀️</button>
+    </aside>
 
-    <div id="controlsPanel" tabindex="-1">
-        
-        <div id="panelHeader">
-            <div id="studioTitle">Color Studio</div>
-            <div id="panelTitle">Product Colors</div>
-        </div>
+    <model-viewer id="viewer" src="" camera-controls auto-rotate environment-image="neutral" shadow-intensity="1" power-preference="high-performance"></model-viewer>
 
-        <div id="colorWheel">
-            <div class="color-selector"></div>
-        </div>
+    <div id="controlsPanel">
+        <header style="margin-bottom:40px;">
+            <h1 style="font-size:24px; font-weight:800; margin:0;">Astra Config</h1>
+            <p style="color:#555; font-size:12px;">Premium Customization</p>
+        </header>
 
-        <div class="color-bar" role="list" aria-label="Paleta de cores" id="colorBar">
-            <h3 style="grid-column: 1 / -1; font-size:12px; color:#888; text-transform:uppercase; margin-bottom:-4px;">Preset Colors</h3>
-            
-            <button class="color-btn" style="background: #333333; border-color: rgba(255,255,255,0.2);" data-color="#333333" data-name="Cinza Escuro" title="Cinza Escuro" aria-label="Cinza Escuro" role="listitem"></button>
-            <button class="color-btn" style="background: #5d4037;" data-color="#5d4037" data-name="Castanho Escuro" title="Castanho Escuro" aria-label="Castanho Escuro" role="listitem"></button>
-            <button class="color-btn" style="background: #795548;" data-color="#795548" data-name="Castanho Médio" title="Castanho Médio" aria-label="Castanho Médio" role="listitem"></button>
-            <button class="color-btn" style="background: #e53935;" data-color="#e53935" data-name="Vermelho" title="Vermelho" aria-label="Vermelho" role="listitem"></button>
-            <button class="color-btn" style="background: #ff8a00;" data-color="#ff8a00" data-name="Laranja" title="Laranja" aria-label="Laranja" role="listitem"></button>
-            <button class="color-btn" style="background: #43a047;" data-color="#43a047" data-name="Verde" title="Verde" aria-label="Verde" role="listitem"></button>
-            
-            <button class="color-btn" style="background: #8e24aa;" data-color="#8e24aa" data-name="Roxo" title="Roxo" aria-label="Roxo" role="listitem"></button>
-            <button class="color-btn" style="background: #00acc1;" data-color="#00acc1" data-name="Ciano" title="Ciano" aria-label="Ciano" role="listitem"></button>
-            <button class="color-btn" style="background: #3949ab;" data-color="#3949ab" data-name="Azul" title="Azul" aria-label="Azul" role="listitem"></button>
-            <button class="color-btn" style="background: #ffd600;" data-color="#ffd600" data-name="Amarelo" title="Amarelo" aria-label="Amarelo" role="listitem"></button>
-            <button class="color-btn" style="background: #bcaaa4;" data-color="#bcaaa4" data-name="Bege Claro" title="Bege Claro" aria-label="Bege Claro" role="listitem"></button>
-            <button class="color-btn" style="background: #d7ccc8;" data-color="#d7ccc8" data-name="Bege" title="Bege" aria-label="Bege" role="listitem"></button>
-
-            <button class="color-btn" style="background: #ffffff;" data-color="reset" data-name="Padrão" title="Padrão (reset)" aria-label="Reset color" role="listitem"></button>
-        </div>
-        
-        <div class="hex-inputs">
-            <div class="input-group">
-                <label>Hex Code</label>
-                <input type="text" id="hexInput1" value="#A9A9A9">
-            </div>
-            <div class="input-group">
-                <label>Hex Code</label>
-                <input type="text" id="hexInput2" value="#253580">
-            </div>
-            <div class="input-group">
-                <label>Hex Code</label>
-                <input type="text" id="hexInput3" value="#000000">
-            </div>
-            <div class="input-group">
-                <label>Hex Code</label>
-                <input type="text" id="hexInput4" value="#FFFFFF">
+        <div id="paint" class="section-group active">
+            <span class="label-title">Chassis Finishes</span>
+            <div class="color-grid">
+                <div class="swatch-btn active" data-color="#1A1A1A"><div style="background:#1A1A1A"></div></div>
+                <div class="swatch-btn" data-color="#E5E5E5"><div style="background:#E5E5E5"></div></div>
+                <div class="swatch-btn" data-color="#00FF41"><div style="background:#00FF41"></div></div>
+                <div class="swatch-btn" data-color="#FF003C"><div style="background:#FF003C"></div></div>
+                <div class="swatch-btn" data-color="#007AFF"><div style="background:#007AFF"></div></div>
+                <div class="swatch-btn" data-color="#FFD700"><div style="background:#FFD700"></div></div>
+                <div class="swatch-btn" data-color="#8E44AD"><div style="background:#8E44AD"></div></div>
+                <div class="swatch-btn" data-color="#FFFFFF"><div style="background:#FFFFFF"></div></div>
             </div>
         </div>
-        
-        <div id="colorLabel" aria-live="polite" style="display:none;">Cor atual: —</div>
-        <button id="resetColor" title="Resetar cor para padrão" style="display:none;">Resetar para padrão</button>
+
+        <div id="materials" class="section-group">
+            <div class="range-wrap">
+                <span class="label-title">Metallic Factor</span>
+                <input type="range" id="metalRange" min="0" max="1" step="0.01" value="0.5">
+            </div>
+            <div class="range-wrap">
+                <span class="label-title">Roughness (Matte/Gloss)</span>
+                <input type="range" id="roughRange" min="0" max="1" step="0.01" value="0.5">
+            </div>
+        </div>
+
+        <div id="light" class="section-group">
+            <div class="range-wrap">
+                <span class="label-title">Exposure</span>
+                <input type="range" id="expRange" min="0" max="2" step="0.1" value="1">
+            </div>
+            <div class="range-wrap">
+                <span class="label-title">Shadow Strength</span>
+                <input type="range" id="shadowRange" min="0" max="2" step="0.1" value="1">
+            </div>
+        </div>
+
+        <button id="applyBtn">Confirm Design</button>
     </div>
-
-    <div id="previewPanel">
-        <div id="viewerWrap" aria-live="polite">
-            <model-viewer id="viewer"
-                src="model.glb"
-                auto-rotate
-                camera-controls
-                exposure="1"
-                shadow-intensity="1"
-                style="background:transparent"
-                ></model-viewer>
-
-            <div id="viewerLoader" role="status" aria-hidden="false">A carregar modelo…</div>
-        </div>
-        
-        <button id="applyConfig">Apply</button>
-    </div>
-
 </div>
 
 <script>
-/* ======================
-    Elementos & Config
-    ====================== */
-const panel = document.getElementById("colorPanel");
-const controlsPanel = document.getElementById("controlsPanel"); 
-const viewer = document.getElementById("viewer");
-const loader = document.getElementById("viewerLoader");
-const colorButtons = Array.from(document.querySelectorAll(".color-btn"));
-const colorLabel = document.getElementById("colorLabel");
-const applyBtn = document.getElementById("applyConfig");
+/* ===========================================================
+    2. JS - PERFORMANCE ENGINE
+   =========================================================== */
+const AstraStudio = {
+    viewer: document.getElementById('viewer'),
+    matName: 'Hoodie_Color', // NOME DO MATERIAL NO SEU GLB
 
-const panelContent = controlsPanel; 
-let lastFocusedElement = null;
-const LOCAL_KEY = "u_premium_config_color"; // Alterado para 'color'
+    init() {
+        this.setupTabs();
+        this.setupCustomizer();
+        this.bindEvents();
+    },
 
-// **!!! SUBSTITUA ESTE VALOR PELO NOME REAL DO MATERIAL 3D QUE QUER COLORIR !!!**
-const MATERIAL_TARGET = 'Hoodie_Color'; // Exemplo: Material do casaco do robô
-const DEFAULT_COLOR_RGB = [0.8, 0.8, 0.8, 1.0]; // Cor padrão (cinza claro/original)
+    setupTabs() {
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.onclick = () => {
+                document.querySelector('.nav-btn.active').classList.remove('active');
+                document.querySelector('.section-group.active').classList.remove('active');
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab).classList.add('active');
+            };
+        });
+    },
 
-/* ======================
-    LÓGICA DE CORES (ALTERADO PARA USAR PBR NO MODEL-VIEWER)
-    ====================== */
+    setupCustomizer() {
+        // Cores
+        document.querySelectorAll('.swatch-btn').forEach(btn => {
+            btn.onclick = () => {
+                document.querySelector('.swatch-btn.active').classList.remove('active');
+                btn.classList.add('active');
+                this.updateMaterial({ baseColor: btn.dataset.color });
+            };
+        });
 
-// Função utilitária para converter HEX para array RGB (necessário para model-viewer)
-function hexToRgb(hex) {
-    const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
-    hex = hex.replace(shorthandRegex, function(m, r, g, b) {
-        return r + r + g + g + b + b;
-    });
+        // Sliders
+        document.getElementById('metalRange').oninput = (e) => this.updateMaterial({ metallic: e.target.value });
+        document.getElementById('roughRange').oninput = (e) => this.updateMaterial({ roughness: e.target.value });
+        document.getElementById('expRange').oninput = (e) => this.viewer.exposure = e.target.value;
+        document.getElementById('shadowRange').oninput = (e) => this.viewer.shadowIntensity = e.target.value;
+    },
 
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    // Retorna [R, G, B, Alpha]
-    return result ? [
-        parseInt(result[1], 16) / 255, 
-        parseInt(result[2], 16) / 255, 
-        parseInt(result[3], 16) / 255, 
-        1.0 
-    ] : null;
-}
+    updateMaterial(props) {
+        if (!this.viewer.model) return;
+        const mat = this.viewer.model.getMaterialByName(this.matName);
+        if (!mat) return;
 
-function setViewerColor(hexColor, name, isReset) {
-    let targetColorRGB;
-
-    if (isReset) {
-        targetColorRGB = DEFAULT_COLOR_RGB;
-        localStorage.removeItem(LOCAL_KEY);
-        colorLabel.textContent = `Cor atual: Padrão`;
-    } else {
-        targetColorRGB = hexToRgb(hexColor);
-        if (!targetColorRGB) return; 
-        localStorage.setItem(LOCAL_KEY, hexColor);
-        colorLabel.textContent = `Cor atual: ${name} (${hexColor})`;
-    }
-
-    // Aplica a cor ao material (só funciona se o modelo estiver carregado)
-    if (viewer.model) {
-        // Encontra o material pelo nome
-        const material = viewer.model.getMaterialByName(MATERIAL_TARGET);
-        
-        if (material && material.pbrMetallicRoughness) {
-            // Define o novo fator de cor base
-            material.pbrMetallicRoughness.setBaseColorFactor(targetColorRGB);
-        } else {
-           console.warn(`Material '${MATERIAL_TARGET}' não encontrado ou não suporta PBR.`);
+        if (props.baseColor) {
+            const rgb = props.baseColor.match(/[A-Za-z0-9]{2}/g).map(v => parseInt(v, 16) / 255);
+            mat.pbrMetallicRoughness.setBaseColorFactor([...rgb, 1]);
         }
+        if (props.metallic !== undefined) mat.pbrMetallicRoughness.setMetallicFactor(props.metallic);
+        if (props.roughness !== undefined) mat.pbrMetallicRoughness.setRoughnessFactor(props.roughness);
+    },
+
+    abrir() {
+        if (!this.viewer.src) this.viewer.src = "model.glb";
+        document.getElementById('colorPanel').classList.add('mostrar');
+        this.viewer.play();
+    },
+
+    fechar() {
+        document.getElementById('colorPanel').classList.remove('mostrar');
+        this.viewer.pause();
+    },
+
+    bindEvents() {
+        document.getElementById('applyBtn').onclick = () => this.fechar();
     }
-}
+};
 
-/* aplica seleção visual e aria */
-function activateButton(btn) {
-  colorButtons.forEach(b => {
-    b.classList.remove("active");
-    b.setAttribute("aria-pressed", "false");
-    b.style.removeProperty("color");
-  });
-  btn.classList.add("active");
-  btn.setAttribute("aria-pressed", "true");
-  
-  // Usa a cor de fundo do botão para dar o brilho
-  btn.style.color = getComputedStyle(btn).backgroundColor || "#fff";
-}
-
-/* aplica cor guardada ao abrir */
-function applySavedColor() {
-  const stored = localStorage.getItem(LOCAL_KEY);
-  
-  if(stored && stored !== "reset") {
-    const btn = colorButtons.find(b => b.dataset.color === stored);
-    if(btn) {
-      activateButton(btn);
-      setViewerColor(stored, btn.dataset.name, false);
-      return;
-    }
-  }
-  
-  // Se não houver cor guardada ou for 'reset', selecciona o reset (Padrão)
-  const def = colorButtons.find(b => b.dataset.color === "reset");
-  if(def) {
-    activateButton(def);
-    setViewerColor("#A9A9A9", "Padrão", true);
-  }
-}
-
-/* ======================
-    EVENT HANDLERS
-    ====================== */
-
-/* click e keyboard handlers para cada botão */
-colorButtons.forEach((btn, idx) => {
-  btn.addEventListener("click", () => {
-    activateButton(btn);
-    const color = btn.dataset.color; 
-    const name = btn.dataset.name || color;
-    const isReset = color === "reset";
-
-    setViewerColor(color, name, isReset);
-  });
-  btn.tabIndex = 0;
-});
-
-/* Botão Apply */
-applyBtn.addEventListener("click", () => {
-    // Aqui você executaria a lógica final, como fechar, salvar a config, etc.
-    fecharModelo3D();
-});
-
-/* Loader do model-viewer: tenta aplicar cor após o modelo carregar */
-viewer.addEventListener('load', () => {
-    // Model carregado
-    loader.style.display = "none";
-    loader.setAttribute("aria-hidden", "true");
-    viewer.setAttribute("data-loaded", "true");
-    
-    // Tenta aplicar a cor guardada assim que o modelo estiver pronto para ser manipulado
-    applySavedColor();
-});
-
-
-/* ======================
-    Lógica Abrir/Fechar & Acessibilidade (MANTIDA)
-    ====================== */
-
-function abrirModelo3D() {
-  lastFocusedElement = document.activeElement;
-  panel.classList.add("mostrar");
-  panel.setAttribute("aria-hidden", "false");
-  document.body.style.overflow = "hidden";
-  setTimeout(()=> panelContent.focus(), 70);
-  // applySavedColor() é chamado no listener 'load'
-}
-
-function fecharModelo3D() {
-  panel.classList.remove("mostrar");
-  panel.setAttribute("aria-hidden", "true");
-  document.body.style.overflow = "auto";
-  if(lastFocusedElement) lastFocusedElement.focus();
-}
-
-document.addEventListener("keydown", (e) => {
-  if(e.key === "Escape" && panel.classList.contains("mostrar")) {
-    e.preventDefault();
-    fecharModelo3D();
-  }
-  // Lógica de navegação por teclado (Arrow keys / Tab Trap)
-  if(panel.classList.contains("mostrar")) {
-    const focusables = panelContent.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
-    const focusArray = Array.from(focusables).filter(el => !el.hasAttribute("disabled"));
-    if (focusArray.length > 0) {
-        const first = focusArray[0];
-        const last = focusArray[focusArray.length - 1];
-        if (e.shiftKey && document.activeElement === first) {
-            e.preventDefault();
-            last.focus();
-        } else if (!e.shiftKey && document.activeElement === last) {
-            e.preventDefault();
-            first.focus();
-        }
-    }
-  }
-});
-
-
-/* Expõe as funções para serem chamadas por um botão externo */
-window.abrirModelo3D = abrirModelo3D;
-window.fecharModelo3D = fecharModelo3D;
+window.abrirModelo3D = () => AstraStudio.abrir();
+AstraStudio.init();
 </script>
 </body>
 </html>
